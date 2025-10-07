@@ -1,3 +1,4 @@
+```text
 url-shortner/
 └─ backend/
    ├─ pom.xml
@@ -51,3 +52,4 @@ url-shortner/
       │     ├─ application.yml
       │     └─ application-dev.yml
       └─ test/java/… (we’ll fill later)
+```
