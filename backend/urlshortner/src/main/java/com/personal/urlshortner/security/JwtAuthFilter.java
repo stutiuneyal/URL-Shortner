@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,14 +22,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 /*
  * JwtAuthFilter -> implements the custom doFilterInternal
  * OncePerRequestFilter -> makes sure that custom filter logic is executed only once per request
  */
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtService jwt;
+    @Autowired
+    private JwtService jwt;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain fc) throws ServletException,IOException{

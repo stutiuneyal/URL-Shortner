@@ -3,6 +3,7 @@ package com.personal.urlshortner.config;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -14,15 +15,14 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import com.personal.urlshortner.security.JwtAuthFilter;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
-    private final AppProperties props;
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
+    @Autowired
+    private AppProperties props;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{

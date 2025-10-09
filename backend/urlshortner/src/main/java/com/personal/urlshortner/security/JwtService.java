@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.personal.urlshortner.config.AppProperties;
@@ -18,10 +19,11 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
+
 public class JwtService {
 
-    private final AppProperties props;
+    @Autowired
+    private AppProperties props;
 
     // generate access token
     public String generateAccessToken(String sub, List<String> roles){

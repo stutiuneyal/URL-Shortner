@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -20,11 +21,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class RateLimiterFilter extends OncePerRequestFilter {
 
-    private final StringRedisTemplate redisTemplate;
-    private final AppProperties props;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    @Autowired
+    private AppProperties props;
 
     /*
      * https://medium.com/@ramachandrankrish/rate-limiting-in-redis-using-lua-script
