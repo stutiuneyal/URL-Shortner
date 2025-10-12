@@ -32,7 +32,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(req-> {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOrigins(Arrays.stream(props.getCors().getOrigins().split(",")).map(String::trim).toList());
+            configuration.setAllowedOriginPatterns(List.of("*"));
             configuration.setAllowedMethods(List.of("GET","POST","PATCH","DELETE"));
             configuration.setAllowedHeaders(List.of("*"));
             configuration.setAllowCredentials(true);

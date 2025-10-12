@@ -38,43 +38,46 @@ public class RedirectController {
             HttpServletRequest request) {
 
         String redisKey = "slug:" + slug;
-        String redisMeta = redisTemplate.opsForValue().get(redisKey);
 
         // if not in cache prepare and set the key
-        if (redisMeta == null) {
 
-            Optional<Link> opt = linkRepository.findBySlugAndActiveTrue(slug);
+        Optional<Link> opt = linkRepository.findBySlugAndActiveTrue(slug);
 
-            if (opt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            Link link = opt.get();
-
-            String expiresStr = link.getExpiresAt() != null ? link.getExpiresAt().toString() : "";
-            String clickLimitStr = link.getClickLimit() != null ? link.getClickLimit().toString() : "";
-            String hasPwdStr = Boolean.toString(link.getPasswordHash() != null);
-
-            redisMeta = String.join("|",
-                    link.getTarget(),
-                    expiresStr,
-                    clickLimitStr,
-                    hasPwdStr,
-                    link.getId());
-
-            redisTemplate.opsForValue().set(redisKey, redisMeta, Duration.ofMinutes(5));
+        if (opt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+
+        Link link = opt.get();
+
+        String expiresStr = link.getExpiresAt() != null ? link.getExpiresAt().toString() : "";
+        String clickLimitStr = link.getClickLimit() != null ? link.getClickLimit().toString() : "";
+        String clicksStr = link.getClicks() != null ? link.getClicks().toString() : "";
+        String hasPwdStr = Boolean.toString(link.getPasswordHash() != null);
+
+        String redisMeta = String.join("|",
+                link.getTarget(),
+                expiresStr,
+                clicksStr,
+                clickLimitStr,
+                hasPwdStr,
+                link.getId());
+
+        redisTemplate.opsForValue().set(redisKey, redisMeta, Duration.ofMinutes(5));
 
         String[] parts = redisMeta.split("\\|", -1);
         String target = parts[0];
         String expires = parts[1];
-        String linkId = parts[4];
+        String linkId = parts[5];
 
         if (expires != null && !expires.isBlank()) {
             Instant exp = Instant.parse(expires); // ISO-8601 string is fine
             if (exp.isBefore(Instant.now())) {
                 return ResponseEntity.status(HttpStatus.GONE).build();
             }
+        }
+
+        if (!parts[3].isEmpty() && Integer.parseInt(parts[2]) > Integer.parseInt(parts[3])) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
 
         // asyncronously record the click

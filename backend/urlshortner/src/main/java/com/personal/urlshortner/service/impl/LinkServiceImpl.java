@@ -2,8 +2,10 @@ package com.personal.urlshortner.service.impl;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -64,7 +66,8 @@ public class LinkServiceImpl implements ILinkService {
         // add the cache for the redirector
         String cachekey = "slug:" + slug;
         redisTemplate.opsForValue().set(cachekey,
-                String.format("%s|%s|%s|%s|%s", link.getTarget(), link.getExpiresAt(), link.getClickLimit(),
+                String.format("%s|%s|%s|%s|%s|%s", link.getTarget(), link.getExpiresAt(), link.getClicks(),
+                        link.getClickLimit(),
                         passwordHash != null, link.getId()),
                 Duration.ofMinutes(5));
 
@@ -89,6 +92,19 @@ public class LinkServiceImpl implements ILinkService {
             link.setExpiresAt(Instant.parse((String) request.get("expiresAt")));
         if (request.containsKey("clickLimit"))
             link.setClickLimit((Integer) request.get("clickLimit"));
+        if (request.containsKey("tags")) {
+            Object tagsObj = request.get("tags");
+
+            if (tagsObj instanceof List<?>) {
+                List<String> tags = ((List<?>) tagsObj)
+                        .stream()
+                        .map(String::valueOf) // convert everything to String safely
+                        .collect(Collectors.toList());
+                link.setTags(tags);
+            } else {
+                link.setTags(Collections.emptyList());
+            }
+        }
         link = linkRepository.save(link);
 
         // clear the cache
@@ -114,9 +130,9 @@ public class LinkServiceImpl implements ILinkService {
     public void recordClick(String linkId) {
 
         linkRepository.findById(linkId).ifPresent(link -> {
-            link.setClicks(link.getClicks() + 1);
-            link.setLastClickedAt(Instant.now());
-            linkRepository.save(link);
+                link.setClicks(link.getClicks() + 1);
+                link.setLastClickedAt(Instant.now());
+                linkRepository.save(link);
         });
 
     }
