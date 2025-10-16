@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAuthStore } from "../store/auth.store";
 import { useWsStore } from "../store/ws.store";
 import { Navigate, Route, Routes } from "react-router-dom";
-import Login from "./auth/login";
+
 import Register from "./auth/Register";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "../components/layout/AppLayout";
@@ -11,6 +11,7 @@ import Links from "./Links";
 import Domains from "./Domains";
 import Workspaces from "./Workspaces";
 import Settings from "./Settings";
+import Login from "./auth/Login";
 
 export default function RoutesConfig() {
 
