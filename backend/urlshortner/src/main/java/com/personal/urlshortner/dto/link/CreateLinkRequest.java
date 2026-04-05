@@ -2,6 +2,7 @@ package com.personal.urlshortner.dto.link;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import com.personal.urlshortner.model.helper.Rule;
 
@@ -29,7 +30,7 @@ public class CreateLinkRequest {
     @Pattern(regexp = "https?://.+")
     private String target;
 
-    private List<Rule> rules = List.of();
+    private Map<String,Object> rules = Map.of();
     private String password;
     private Instant expiresAt;
     private Integer clickLimit;

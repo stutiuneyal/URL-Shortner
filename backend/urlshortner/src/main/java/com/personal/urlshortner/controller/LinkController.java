@@ -35,22 +35,59 @@ public class LinkController {
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ResponseEntity<?> listAllLinksInWorkspace(
+            @AuthenticationPrincipal String userId,
             @RequestParam(name = "workspace_id") String workspaceId) {
-        return ResponseEntity.ok(linkService.listAllLinksInWorkspace(workspaceId));
+        return ResponseEntity.ok(linkService.listAllLinksInWorkspace(userId, workspaceId));
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public ResponseEntity<?> getLink(
+            @AuthenticationPrincipal String userId,
+            @PathVariable(name = "id") String linkId) {
+        return ResponseEntity.ok(linkService.getLinkById(userId, linkId));
     }
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.PATCH)
     public ResponseEntity<?> updateLink(
+            @AuthenticationPrincipal String userId,
             @PathVariable(name = "id") String linkId,
             @RequestBody Map<String, Object> request) {
-        return ResponseEntity.ok(linkService.updateLink(linkId, request));
+        return ResponseEntity.ok(linkService.updateLink(userId, linkId, request));
+    }
+
+    @RequestMapping(value = "/{id}/pause", method = RequestMethod.POST)
+    public ResponseEntity<?> pauseLink(
+            @AuthenticationPrincipal String userId,
+            @PathVariable(name = "id") String linkId) {
+        return ResponseEntity.ok(linkService.pauseLink(userId, linkId));
+    }
+
+    @RequestMapping(value = "/{id}/resume", method = RequestMethod.POST)
+    public ResponseEntity<?> resumeLink(
+            @AuthenticationPrincipal String userId,
+            @PathVariable(name = "id") String linkId) {
+        return ResponseEntity.ok(linkService.resumeLink(userId, linkId));
+    }
+
+    @RequestMapping(value = "/{id}/archive", method = RequestMethod.POST)
+    public ResponseEntity<?> archiveLink(
+            @AuthenticationPrincipal String userId,
+            @PathVariable(name = "id") String linkId) {
+        return ResponseEntity.ok(linkService.archiveLink(userId, linkId));
+    }
+
+    @RequestMapping(value = "/{id}/unarchive", method = RequestMethod.POST)
+    public ResponseEntity<?> unarchiveLink(
+            @AuthenticationPrincipal String userId,
+            @PathVariable(name = "id") String linkId) {
+        return ResponseEntity.ok(linkService.unarchiveLink(userId, linkId));
     }
 
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<?> deleteLink(
+            @AuthenticationPrincipal String userId,
             @PathVariable(name = "id") String linkId) {
-        return ResponseEntity.ok(linkService.deleteLink(linkId));
+        return ResponseEntity.ok(linkService.deleteLink(userId, linkId));
     }
-
 }

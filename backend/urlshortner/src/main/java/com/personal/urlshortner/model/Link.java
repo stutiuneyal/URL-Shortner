@@ -2,12 +2,10 @@ package com.personal.urlshortner.model;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import com.personal.urlshortner.model.helper.Rule;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,24 +22,30 @@ public class Link {
     @Id
     private String id;
 
-    @Indexed
     private String workspaceId;
     private String domainId;
 
-    @Indexed(unique = true)
     private String slug;
-
     private String target;
-    private List<Rule> rules;
+
+    private Map<String, Object> rules;
+
     private String passwordHash;
+
     private Instant expiresAt;
     private Integer clickLimit;
     private Long clicks;
-    private Boolean utmStrip;
-    private List<String> tags;
-    private Boolean active;
-    private String createdBy;
-    private Instant createdAt;
     private Instant lastClickedAt;
 
+    private Boolean utmStrip;
+    private List<String> tags;
+
+    private Boolean active;
+
+    private Boolean archived;
+    private Instant archivedAt;
+    private String archivedBy;
+
+    private String createdBy;
+    private Instant createdAt;
 }

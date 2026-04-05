@@ -29,8 +29,7 @@ public class RateLimiterFilter extends OncePerRequestFilter {
     private AppProperties props;
 
     /*
-     * https://medium.com/@ramachandrankrish/rate-limiting-in-redis-using-lua-script
-     * -61774e74e270
+     * https://medium.com/@ramachandrankrish/rate-limiting-in-redis-using-lua-script-61774e74e270
      * We are using LUA because LUA scripts allow us to to evaluate data within
      * Redis and make decisions based on the parameters you pass and the stored
      * data.

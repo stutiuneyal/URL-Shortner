@@ -9,9 +9,11 @@ import org.springframework.stereotype.Repository;
 import com.personal.urlshortner.model.Domain;
 
 @Repository
-public interface DomainRepository extends MongoRepository<Domain,String> {
+public interface DomainRepository extends MongoRepository<Domain, String> {
 
     List<Domain> findByWorkspaceId(String workspaceId);
-    Optional<Domain> findByWorkspaceIdAndHostname(String workspaceId,String hostname);
 
+    List<Domain> findByWorkspaceIdOrderByCreatedAtDesc(String workspaceId);
+
+    Optional<Domain> findByWorkspaceIdAndHostname(String workspaceId, String hostname);
 }

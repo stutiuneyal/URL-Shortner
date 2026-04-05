@@ -23,18 +23,19 @@ services:
     image: redis:7.2
     container_name: urlshortner-redis
     restart: unless-stopped
-    command: ["redis-server", "--save","60","1","--loglevel", "warning"]
+    command: ["redis-server", "--port", "6380", "--save", "60", "1", "--loglevel", "warning"]
     ports:
-      - "6379:6379"
+      - "6380:6380"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli","ping"]
+      test: ["CMD", "redis-cli", "-p", "6380", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
     networks:
       - urlshortner-net
+
 
 ## TODO: Add Backend
 

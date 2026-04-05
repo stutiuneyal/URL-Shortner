@@ -1,45 +1,52 @@
 import { useEffect } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuthStore } from "../store/auth.store";
 import { useWsStore } from "../store/ws.store";
-import { Navigate, Route, Routes } from "react-router-dom";
 
-import Register from "./auth/Register";
 import ProtectedRoute from "./ProtectedRoute";
+import Landing from "./Landing";
+import Login from "./auth/Login";
+import Register from "./auth/Register";
+import UnlockLink from "./UnlockLink";
+
 import AppLayout from "../components/layout/AppLayout";
 import Dashboard from "./Dashboard";
 import Links from "./Links";
 import Domains from "./Domains";
 import Workspaces from "./Workspaces";
 import Settings from "./Settings";
-import Login from "./auth/Login";
 
 export default function RoutesConfig() {
-
-    const initAuth = useAuthStore((s) => s.init)
-    const intiWs = useWsStore((s) => s.init)
+    const initAuth = useAuthStore((s) => s.init);
+    const initWs = useWsStore((s) => s.init);
 
     useEffect(() => {
         initAuth();
-        intiWs();
-    }, [initAuth, intiWs])
+        initWs();
+    }, [initAuth, initWs]);
 
     return (
         <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/unlock/:slug" element={<UnlockLink />} />
 
-            {/* Parent-Child/Nested Routes */}
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route
+                element={
+                    <ProtectedRoute>
+                        <AppLayout />
+                    </ProtectedRoute>
+                }
+            >
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/links" element={<Links />} />
                 <Route path="/domains" element={<Domains />} />
                 <Route path="/workspaces" element={<Workspaces />} />
                 <Route path="/settings" element={<Settings />} />
             </Route>
-            {/* Default Route */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-    )
 
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+    );
 }

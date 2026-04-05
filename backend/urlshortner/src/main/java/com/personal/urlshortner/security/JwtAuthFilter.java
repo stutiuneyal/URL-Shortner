@@ -46,7 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 roles==null?List.of() : roles.stream().map(SimpleGrantedAuthority::new).toList());
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }catch(JwtException ignore){
-
+                ignore.printStackTrace();
             }
         }
 

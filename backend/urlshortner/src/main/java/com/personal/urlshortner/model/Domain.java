@@ -11,11 +11,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document("domains")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Document(collection = "domains")
 public class Domain {
 
     @Id
@@ -23,10 +23,14 @@ public class Domain {
 
     @Indexed
     private String workspaceId;
-    @Indexed
     private String hostname;
 
-    private Instant verifiedAt;
-    private Instant createdAt;
+    private String verificationToken;
+    private String cnameTarget;
 
+    private Instant createdAt;
+    private Instant verifiedAt;
+    private Instant lastCheckedAt;
+
+    private String verificationStatus;
 }
