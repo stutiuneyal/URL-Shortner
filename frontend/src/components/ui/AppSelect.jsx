@@ -1,5 +1,5 @@
-import { Listbox, Transition } from "@headlessui/react";
 import { Fragment } from "react";
+import { Listbox, Transition } from "@headlessui/react";
 import { Check, ChevronDown } from "lucide-react";
 
 function cn(...classes) {
@@ -13,98 +13,108 @@ export default function AppSelect({
     options = [],
     disabled = false,
     className = "",
-    buttonClassName = "",
-    optionsClassName = "",
-    optionClassName = "",
-    icon: Icon
+    icon: Icon = null
 }) {
-    const normalizedValue = value == null ? "" : String(value);
-    const selected = options.find(
-        (opt) => String(opt.value) === normalizedValue
-    );
+    const selected = options.find((opt) => String(opt.value) === String(value));
 
     return (
-        <div className={cn("relative w-full", className)}>
-            <Listbox
-                value={normalizedValue}
-                onChange={onValueChange}
-                disabled={disabled}
-            >
-                <div className="relative">
-                    <Listbox.Button
-                        className={cn(
-                            "w-full h-11 rounded-2xl border border-white/12 bg-white/[0.04] px-4 pr-10 text-left text-sm font-medium text-white backdrop-blur-xl transition",
-                            "hover:border-white/20 hover:bg-white/[0.06]",
-                            "focus:outline-none focus:ring-2 focus:ring-violet-500/30",
-                            "disabled:cursor-not-allowed disabled:opacity-50",
-                            buttonClassName
-                        )}
-                    >
-                        <div className="flex min-w-0 items-center gap-2">
-                            {Icon ? <Icon size={16} className="shrink-0 text-white/50" /> : null}
-                            <span className={cn("block truncate", !selected && "text-white/45")}>
-                                {selected ? selected.label : placeholder}
-                            </span>
-                        </div>
-
-                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                            <ChevronDown size={16} className="text-white/50" />
-                        </span>
-                    </Listbox.Button>
-
-                    <Transition
-                        as={Fragment}
-                        enter="transition ease-out duration-100"
-                        enterFrom="opacity-0 scale-95 translate-y-1"
-                        enterTo="opacity-100 scale-100 translate-y-0"
-                        leave="transition ease-in duration-75"
-                        leaveFrom="opacity-100 scale-100 translate-y-0"
-                        leaveTo="opacity-0 scale-95 translate-y-1"
-                    >
-                        <Listbox.Options
+        <Listbox value={value} onChange={onValueChange} disabled={disabled}>
+            {({ open }) => (
+                <div
+                    className={cn(
+                        "relative w-full",
+                        open ? "z-[220]" : "z-10",
+                        className
+                    )}
+                >
+                    <div className="relative">
+                        <Listbox.Button
                             className={cn(
-                                "absolute z-[120] mt-2 max-h-72 w-full overflow-auto rounded-2xl border border-white/10 bg-[#14151c]/95 py-2 shadow-2xl backdrop-blur-xl",
-                                "focus:outline-none",
-                                optionsClassName
+                                "input-premium flex h-12 w-full items-center justify-between gap-3 pr-11 text-left",
+                                disabled ? "cursor-not-allowed opacity-60" : ""
                             )}
                         >
-                            {options.length === 0 ? (
-                                <div className="px-4 py-2 text-sm text-white/50">No options</div>
-                            ) : (
-                                options.map((option) => {
-                                    const optionValue =
-                                        option.value == null ? "" : String(option.value);
+                            <span className="flex min-w-0 items-center gap-3">
+                                {Icon ? (
+                                    <Icon size={16} className="shrink-0 text-muted-foreground" />
+                                ) : null}
 
-                                    return (
+                                <span
+                                    className={cn(
+                                        "truncate text-sm",
+                                        selected ? "text-foreground" : "text-muted-foreground"
+                                    )}
+                                >
+                                    {selected?.label || placeholder}
+                                </span>
+                            </span>
+
+                            <ChevronDown
+                                size={16}
+                                className={cn(
+                                    "shrink-0 text-muted-foreground transition-transform duration-200",
+                                    open ? "rotate-180" : ""
+                                )}
+                            />
+                        </Listbox.Button>
+
+                        <Transition
+                            as={Fragment}
+                            leave="transition ease-in duration-100"
+                            leaveFrom="opacity-100 translate-y-0"
+                            leaveTo="opacity-0 translate-y-1"
+                            enter="transition ease-out duration-150"
+                            enterFrom="opacity-0 translate-y-1"
+                            enterTo="opacity-100 translate-y-0"
+                        >
+                            <Listbox.Options
+                                className={cn(
+                                    "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[230]",
+                                    "max-h-72 overflow-auto rounded-[1.25rem] border border-white/10",
+                                    "bg-[#151821] shadow-[0_18px_50px_rgba(0,0,0,0.45)]",
+                                    "p-1 outline-none premium-scrollbar"
+                                )}
+                            >
+                                {options.length ? (
+                                    options.map((option) => (
                                         <Listbox.Option
-                                            key={`${optionValue}-${option.label}`}
-                                            value={optionValue}
-                                            className={({ active }) =>
+                                            key={String(option.value)}
+                                            value={option.value}
+                                            className={({ active, selected }) =>
                                                 cn(
-                                                    "relative mx-1 cursor-pointer select-none rounded-xl px-4 py-2 text-sm transition",
+                                                    "relative cursor-pointer select-none rounded-[1rem] px-4 py-3 pr-10 text-sm transition",
                                                     active
-                                                        ? "bg-violet-500/20 text-white"
-                                                        : "text-white/90",
-                                                    optionClassName
+                                                        ? "bg-white/[0.06] text-white"
+                                                        : "text-white/85",
+                                                    selected ? "bg-accent/20 text-white" : ""
                                                 )
                                             }
                                         >
-                                            {({ selected: isSelected }) => (
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <span className="truncate">{option.label}</span>
-                                                    {isSelected ? (
-                                                        <Check size={14} className="shrink-0 text-violet-400" />
+                                            {({ selected }) => (
+                                                <>
+                                                    <span className="block truncate font-medium">
+                                                        {option.label}
+                                                    </span>
+
+                                                    {selected ? (
+                                                        <span className="absolute inset-y-0 right-3 flex items-center text-accent">
+                                                            <Check size={16} />
+                                                        </span>
                                                     ) : null}
-                                                </div>
+                                                </>
                                             )}
                                         </Listbox.Option>
-                                    );
-                                })
-                            )}
-                        </Listbox.Options>
-                    </Transition>
+                                    ))
+                                ) : (
+                                    <div className="px-4 py-3 text-sm text-muted-foreground">
+                                        No options available
+                                    </div>
+                                )}
+                            </Listbox.Options>
+                        </Transition>
+                    </div>
                 </div>
-            </Listbox>
-        </div>
+            )}
+        </Listbox>
     );
 }

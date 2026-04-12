@@ -47,8 +47,7 @@ function CreateWorkspaceModal({
                                         New workspace
                                     </h3>
                                     <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                                        Give this workspace a clean, memorable name. You can use it
-                                        for links, domains, and analytics later.
+                                        Give this workspace a clear name so it is easy to identify across links, domains, and analytics.
                                     </p>
                                 </div>
 
@@ -78,7 +77,7 @@ function CreateWorkspaceModal({
                                 <div className="panel-muted flex items-start gap-3 rounded-2xl px-4 py-3 text-sm text-muted-foreground">
                                     <Check size={16} className="mt-0.5 shrink-0 text-emerald-400" />
                                     <span>
-                                        This workspace will be selected immediately after creation.
+                                        This workspace will become active as soon as it is created.
                                     </span>
                                 </div>
 
@@ -179,7 +178,7 @@ export default function WorkspacePicker() {
             pushToast({
                 type: "warning",
                 title: "Workspace name required",
-                description: "Please enter a name before creating a workspace."
+                description: "Enter a workspace name before continuing."
             });
             return;
         }
@@ -206,7 +205,7 @@ export default function WorkspacePicker() {
                 description:
                     error?.response?.data?.message ||
                     error?.message ||
-                    "Something went wrong while creating the workspace."
+                    "We couldn’t create the workspace. Please try again."
             });
         } finally {
             setSubmitting(false);
@@ -222,7 +221,7 @@ export default function WorkspacePicker() {
                         hint={
                             loading
                                 ? "Loading available workspaces..."
-                                : "Switch the active workspace for links, domains, and analytics."
+                                : "Switch the active workspace for links, domains, and analytics data."
                         }
                     >
                         <AppSelect
@@ -246,7 +245,7 @@ export default function WorkspacePicker() {
                     className="btn-secondary-premium"
                 >
                     <Plus size={16} />
-                    New Workspace
+                    New workspace
                 </button>
 
                 <div className="hidden text-xs text-muted-foreground xl:block xl:pb-3">

@@ -52,7 +52,7 @@ export default function SideNav() {
                                     URL Shortener
                                 </div>
                                 <div className="mt-1 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                                    Matte Edition
+                                    Workspace Console
                                 </div>
                             </motion.div>
                         )}
@@ -81,8 +81,8 @@ export default function SideNav() {
                                 >
                                     <span
                                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border transition ${active
-                                                ? "border-white/10 bg-white/[0.08] text-foreground"
-                                                : "border-transparent bg-transparent text-muted-foreground"
+                                            ? "border-white/10 bg-white/[0.08] text-foreground"
+                                            : "border-transparent bg-transparent text-muted-foreground"
                                             }`}
                                     >
                                         <Icon size={18} />
@@ -114,10 +114,10 @@ export default function SideNav() {
                         {!collapsed && (
                             <div className="min-w-0">
                                 <div className="text-sm font-medium text-foreground">
-                                    Premium Upgrade Path
+                                    What’s available
                                 </div>
                                 <div className="mt-0.5 text-xs leading-5 text-muted-foreground">
-                                    Domains, analytics, QR, and collaboration are ready to evolve.
+                                    Domains, analytics, QR tools, and collaboration can grow here over time.
                                 </div>
                             </div>
                         )}

@@ -44,25 +44,25 @@ export default function SummaryCards({ data = {} }) {
             <StatCard
                 label="Total Links"
                 value={data.total || 0}
-                helper="All short links created in this workspace"
+                helper="Total short links created in this workspace"
                 icon={Link2}
             />
             <StatCard
                 label="Active Links"
                 value={data.active || 0}
-                helper="Links currently redirecting successfully"
+                helper="Links currently redirecting as expected"
                 icon={Activity}
             />
             <StatCard
                 label="Total Clicks"
                 value={data.clicks || 0}
-                helper="Combined traffic across every link"
+                helper="Total clicks across all links"
                 icon={MousePointerClick}
             />
             <StatCard
                 label="Expiring Soon"
                 value={data.expiringSoon || 0}
-                helper="Links reaching expiry within 7 days"
+                helper="Links expiring within 7 days"
                 icon={TimerReset}
             />
             <StatCard

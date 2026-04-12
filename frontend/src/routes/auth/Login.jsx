@@ -39,6 +39,11 @@ export default function Login() {
             ...prev,
             [key]: value
         }));
+
+        setErrors((prev) => ({
+            ...prev,
+            [key]: ""
+        }));
     };
 
     const validate = () => {
@@ -117,7 +122,7 @@ export default function Login() {
                                     URL Shortener
                                 </div>
                                 <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                                    Premium Access
+                                    Secure Access
                                 </div>
                             </div>
                         </div>
@@ -127,8 +132,7 @@ export default function Login() {
                             Welcome back
                         </h1>
                         <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
-                            Sign in to manage branded links, track performance, and keep your
-                            workspace organized in one premium control room.
+                            Sign in to create short links, review performance, and manage your workspace.
                         </p>
 
                         <form onSubmit={onSubmit} className="mt-8 space-y-5">
@@ -169,6 +173,7 @@ export default function Login() {
                                         type="button"
                                         onClick={() => setShowPassword((v) => !v)}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
                                     >
                                         {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                                     </button>
@@ -181,7 +186,7 @@ export default function Login() {
 
                             <div className="panel-muted flex items-start gap-3 px-4 py-3 text-sm text-muted-foreground">
                                 <ShieldCheck size={16} className="mt-0.5 text-success" />
-                                Sessions are handled through your stored access token and protected routes.
+                                Sign in to manage links, domains, and workspace activity from one place.
                             </div>
 
                             <button
@@ -189,7 +194,7 @@ export default function Login() {
                                 disabled={submitting}
                                 className="btn-primary-premium w-full disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                {submitting ? "Signing in..." : "Sign In"}
+                                {submitting ? "Signing in..." : "Sign in"}
                                 {!submitting ? <ArrowRight size={16} /> : null}
                             </button>
 
@@ -199,7 +204,7 @@ export default function Login() {
                                     to="/register"
                                     className="font-medium text-foreground transition hover:text-accent"
                                 >
-                                    Create one
+                                    Create an account
                                 </Link>
                             </p>
                         </form>
@@ -214,31 +219,29 @@ export default function Login() {
                         className="w-full max-w-xl"
                     >
                         <div className="panel-soft p-8">
-                            <div className="soft-label mb-3">Why this feels different</div>
+                            <div className="soft-label mb-3">Why teams use it</div>
                             <h2 className="text-3xl font-semibold tracking-tight text-foreground">
-                                A sharper workspace for modern link management
+                                Shorten, share, and measure links with clarity
                             </h2>
                             <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                                This experience is now built around a matte-black, premium shell
-                                instead of a stock admin template. It gives your project a much
-                                stronger product identity.
+                                Keep links organized, review performance quickly, and give your team a clean place to manage campaigns and shared destinations.
                             </p>
 
                             <div className="mt-8 grid gap-4">
                                 <FeatureRow
                                     icon={Link2}
-                                    title="Cleaner link workflows"
-                                    description="Create, edit, filter, and track links in a much more polished flow."
+                                    title="Clean link workflows"
+                                    description="Create, edit, filter, and manage links in a faster and clearer flow."
                                 />
                                 <FeatureRow
                                     icon={Sparkles}
-                                    title="Premium visual language"
-                                    description="Dark surfaces, better spacing, softer borders, and smoother motion."
+                                    title="Polished workspace"
+                                    description="Consistent spacing, calm surfaces, and a stronger product feel."
                                 />
                                 <FeatureRow
                                     icon={ShieldCheck}
-                                    title="Ready for stronger features"
-                                    description="This shell sets you up for domains, analytics, QR sharing, and access control."
+                                    title="Secure session handling"
+                                    description="Stay signed in across refreshes and recover gracefully when tokens expire."
                                 />
                             </div>
                         </div>

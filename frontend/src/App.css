@@ -1,2 +1,5 @@
 /* Intentionally left minimal.
    Old Vite starter styles were removed so the Tailwind-based shell can take over cleanly. */
+.tour-active {
+   scroll-behavior: smooth;
+}

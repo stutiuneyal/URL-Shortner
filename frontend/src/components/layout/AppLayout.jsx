@@ -5,8 +5,23 @@ import SideNav from "./SideNav";
 import TopNav from "./TopNav";
 import ToastViewport from "../common/ToastViewport";
 
+function getActiveWorkSpace(){
+    const wsData = localStorage.getItem("ws-v1")
+    if(wsData == null){
+        return null
+    }
+    let jsonData = JSON.parse(wsData)
+    if(jsonData?.name === null || jsonData?.name === ""){
+        return jsonData?.name
+    }
+
+    return jsonData?.name
+}
+
 export default function AppLayout() {
     const collapsed = useUiStore((s) => s.siderCollapsed);
+
+    const wsName = getActiveWorkSpace()
 
     return (
         <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
@@ -44,14 +59,13 @@ export default function AppLayout() {
                                             URL Shortener
                                         </h1>
                                         <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                                            Manage links, domains, workspaces, and analytics from a
-                                            matte-black control room built for clarity and speed.
+                                            Manage links, domains, workspaces, and analytics from one place.
                                         </p>
                                     </div>
 
                                     <div className="panel-muted inline-flex items-center gap-2 self-start px-3 py-2 text-xs text-muted-foreground sm:self-auto">
                                         <span className="h-2 w-2 rounded-full bg-success shadow-[0_0_12px_rgba(34,197,94,0.6)]" />
-                                        Premium shell enabled
+                                        {wsName !== null && wsName !== "" ? `Current workspace: ${wsName}` : "No workspace selected"}
                                     </div>
                                 </div>
                             </div>

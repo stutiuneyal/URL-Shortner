@@ -21,6 +21,8 @@ import {
 import SummaryCards from "../components/analytics/SummaryCards.jsx";
 import { getDashboardAnalytics } from "../api/analytics.api";
 import { useWsStore } from "../store/ws.store";
+import { useOnboardingStore } from "../store/onboarding.store";
+import { waitForElement } from "../tours/tourUtils";
 
 function formatDate(value) {
     if (!value) return "—";
@@ -66,8 +68,7 @@ function EmptyWorkspaceState() {
                 No workspace selected
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-                Select a workspace first so we can show analytics, top links, recent activity,
-                and expiring items.
+                Select a workspace to view analytics, top links, recent activity, and link performance.
             </p>
         </div>
     );
@@ -156,6 +157,9 @@ export default function Dashboard() {
     const [dashboard, setDashboard] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const hasSeenDashboardTour = useOnboardingStore((s) => s.hasSeenDashboardTour);
+    const startTour = useOnboardingStore((s) => s.startTour);
+
     useEffect(() => {
         let mounted = true;
 
@@ -195,6 +199,36 @@ export default function Dashboard() {
     const deviceBreakdown = dashboard?.deviceBreakdown || [];
     const browserBreakdown = dashboard?.browserBreakdown || [];
 
+    useEffect(() => {
+        if (loading) return;
+        if (hasSeenDashboardTour) return;
+
+        const hasRealData =
+            (summary?.totalLinks || 0) > 0 ||
+            (topLinks?.length || 0) > 0 ||
+            (recentLinks?.length || 0) > 0;
+
+        if (!hasRealData) return;
+
+        const run = async () => {
+            const ready = await waitForElement('[data-tour="dashboard-summary"]', 4000);
+
+            if (ready) {
+                startTour("dashboard");
+            }
+        };
+
+        const id = setTimeout(run, 500);
+        return () => clearTimeout(id);
+    }, [
+        loading,
+        hasSeenDashboardTour,
+        summary?.totalLinks,
+        topLinks?.length,
+        recentLinks?.length,
+        startTour
+    ]);
+
     const avgClicksPerLink = useMemo(() => {
         const value = summary?.averageClicksPerLink || 0;
         return Number(value).toFixed(1);
@@ -224,12 +258,13 @@ export default function Dashboard() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="panel-soft overflow-hidden"
+                data-tour="dashboard-summary"
             >
                 <div className="grid gap-5 px-5 py-5 lg:grid-cols-[1.4fr_0.9fr] lg:px-6">
                     <div>
                         <div className="soft-label mb-2">Overview</div>
                         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                            Premium analytics for your workspace
+                            Workspace analytics overview
                         </h2>
                         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
                             This dashboard now uses real click-event data for time-series traffic,
@@ -241,25 +276,25 @@ export default function Dashboard() {
                         <MiniInsight
                             title="Average Clicks"
                             value={avgClicksPerLink}
-                            helper="Average traffic per link in this workspace"
+                            helper="Average clicks per link in this workspace"
                             icon={Sparkles}
                         />
                         <MiniInsight
                             title="Protected Links"
                             value={summary.protectedLinks || 0}
-                            helper="Links currently using password protection"
+                            helper="Links currently protected by password"
                             icon={LockKeyhole}
                         />
                         <MiniInsight
                             title="Live Links"
                             value={statusBreakdown.live || 0}
-                            helper="Active and not expired"
+                            helper="Links that are active and not expired"
                             icon={Activity}
                         />
                         <MiniInsight
                             title="Expiring Soon"
                             value={summary.expiringSoon || 0}
-                            helper="Needs review within the next 7 days"
+                            helper="Links expiring within the next 7 days"
                             icon={CalendarClock}
                         />
                     </div>
@@ -370,7 +405,7 @@ export default function Dashboard() {
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-                <section className="panel-soft overflow-hidden">
+                <section data-tour="dashboard-top-links" className="panel-soft overflow-hidden">
                     <div className="border-b border-border px-5 py-4 sm:px-6">
                         <div className="soft-label mb-2">Top Performance</div>
                         <h3 className="text-lg font-semibold text-foreground">
@@ -522,7 +557,7 @@ export default function Dashboard() {
             </div>
 
             <div className="grid gap-6 xl:grid-cols">
-                <section className="panel-soft overflow-hidden">
+                <section data-tour="dashboard-recent-activity" className="panel-soft overflow-hidden">
                     <div className="border-b border-border px-5 py-4 sm:px-6">
                         <div className="soft-label mb-2">Recent Activity</div>
                         <h3 className="text-lg font-semibold text-foreground">

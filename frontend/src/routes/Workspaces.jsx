@@ -9,6 +9,8 @@ import {
 import { listWorkspaces } from "../api/workspaces.api";
 import { useUiStore } from "../store/ui.store";
 import { useWsStore } from "../store/ws.store";
+import { useOnboardingStore } from "../store/onboarding.store";
+import { waitForElement } from "../tours/tourUtils";
 
 function formatDate(value) {
     if (!value) return "—";
@@ -28,7 +30,27 @@ export default function Workspaces() {
     const pushToast = useUiStore((s) => s.pushToast);
     const { list, setList, current, setCurrent } = useWsStore();
 
+    const hasSeenWorkspaceTour = useOnboardingStore((s) => s.hasSeenWorkspaceTour);
+    const startTour = useOnboardingStore((s) => s.startTour);
+
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (loading) return;
+        if (!list.length) return;
+        if (hasSeenWorkspaceTour) return;
+
+        const run = async () => {
+            const ready = await waitForElement('[data-tour="workspace-library"]', 3000);
+
+            if (ready) {
+                startTour("workspace");
+            }
+        };
+
+        const id = setTimeout(run, 400);
+        return () => clearTimeout(id);
+    }, [loading, list.length, hasSeenWorkspaceTour, startTour]);
 
     useEffect(() => {
         let mounted = true;
@@ -68,17 +90,16 @@ export default function Workspaces() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="panel-soft overflow-hidden"
+                data-tour="workspace-overview"
             >
                 <div className="grid gap-5 px-5 py-5 lg:grid-cols-[1.4fr_0.9fr] lg:px-6">
                     <div>
                         <div className="soft-label mb-2">Workspaces</div>
                         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                            Manage workspace context cleanly
+                            Manage your workspaces
                         </h2>
                         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-                            This page is now aligned with the matte product shell and gives
-                            you a better foundation for roles, members, and collaboration
-                            later.
+                            View available workspaces, switch the active one, and prepare for team collaboration as the product grows.
                         </p>
                     </div>
 
@@ -104,7 +125,7 @@ export default function Workspaces() {
                 </div>
             </motion.section>
 
-            <section className="panel-soft overflow-hidden">
+            <section data-tour="workspace-library" className="panel-soft overflow-hidden">
                 <div className="border-b border-border px-5 py-5 sm:px-6">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
@@ -113,13 +134,13 @@ export default function Workspaces() {
                                 All available workspaces
                             </h3>
                             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                                You can switch the active workspace here or from the header.
+                                You can switch the active workspace here or from the header picker.
                             </p>
                         </div>
 
                         <div className="panel-muted flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
                             <Plus size={14} />
-                            Workspace creation is available in the header picker
+                            Create a new workspace from the header picker
                         </div>
                     </div>
                 </div>
@@ -129,12 +150,13 @@ export default function Workspaces() {
                         <WorkspaceListLoading />
                     ) : list.length ? (
                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                            {list.map((workspace) => {
+                            {list.map((workspace, index) => {
                                 const isSelected = workspace.id === selectedWorkspaceId;
 
                                 return (
                                     <motion.button
                                         key={workspace.id}
+                                        data-tour={index === 0 ? "workspace-card-first" : undefined}
                                         type="button"
                                         whileHover={{ y: -2 }}
                                         whileTap={{ scale: 0.995 }}
@@ -147,8 +169,8 @@ export default function Workspaces() {
                                             });
                                         }}
                                         className={`text-left rounded-[1.5rem] border p-5 transition ${isSelected
-                                                ? "border-accent/30 bg-accent/10"
-                                                : "border-border bg-white/[0.03] hover:border-white/10 hover:bg-white/[0.045]"
+                                            ? "border-accent/30 bg-accent/10"
+                                            : "border-border bg-white/[0.03] hover:border-white/10 hover:bg-white/[0.045]"
                                             }`}
                                     >
                                         <div className="flex items-start justify-between gap-4">
@@ -181,7 +203,7 @@ export default function Workspaces() {
                                                 </>
                                             ) : (
                                                 <span className="text-muted-foreground">
-                                                    Click to make this your active workspace
+                                                    Select this workspace to make it active
                                                 </span>
                                             )}
                                         </div>
@@ -198,8 +220,7 @@ export default function Workspaces() {
                                 No workspaces found
                             </h3>
                             <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                                Create your first workspace from the header to begin organizing
-                                links, analytics, and future domain settings.
+                                Create your first workspace from the header to start organizing links, analytics, and domain settings.
                             </p>
                         </div>
                     )}

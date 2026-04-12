@@ -19,35 +19,44 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 @Service
-
 public class JwtService {
 
     @Autowired
     private AppProperties props;
 
     // generate access token
-    public String generateAccessToken(String sub, List<String> roles){
+    public String generateAccessToken(String sub, List<String> roles) {
         return Jwts.builder().setSubject(sub).claim("roles", roles)
-        .setIssuedAt(new Date())
-        .setExpiration(Date.from(Instant.now().plus(props.getJwt().getAccessTtlMin(),ChronoUnit.MINUTES)))
-        .signWith(Keys.hmacShaKeyFor(props.getJwt().getSecret().getBytes(StandardCharsets.UTF_8)),SignatureAlgorithm.HS256)
-        .compact();
+                .setIssuedAt(new Date())
+                .setExpiration(Date.from(getAccessTokenExpiryInstant()))
+                .signWith(Keys.hmacShaKeyFor(props.getJwt().getSecret().getBytes(StandardCharsets.UTF_8)),
+                        SignatureAlgorithm.HS256)
+                .compact();
     }
 
-
-    // generate the refresh token, that will be used to generate a new access token once the older has expired
-    public String generateRefreshToken(String sub){
+    // generate the refresh token, that will be used to generate a new access token
+    // once the older has expired
+    public String generateRefreshToken(String sub) {
         return Jwts.builder().setSubject(sub)
-        .setIssuedAt(new Date())
-        .setExpiration(Date.from(Instant.now().plus(props.getJwt().getRefreshTtlDays(),ChronoUnit.DAYS)))
-        .signWith(Keys.hmacShaKeyFor(props.getJwt().getSecret().getBytes(StandardCharsets.UTF_8)),SignatureAlgorithm.HS256)
-        .compact();
+                .setIssuedAt(new Date())
+                .setExpiration(Date.from(Instant.now().plus(props.getJwt().getRefreshTtlDays(), ChronoUnit.DAYS)))
+                .signWith(Keys.hmacShaKeyFor(props.getJwt().getSecret().getBytes(StandardCharsets.UTF_8)),
+                        SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public Instant getAccessTokenExpiryInstant() {
+        return Instant.now().plus(props.getJwt().getAccessTtlMin(), ChronoUnit.MINUTES);
+    }
+
+    public Long getAccessTokenExpiryEpochMillis() {
+        return getAccessTokenExpiryInstant().toEpochMilli();
     }
 
     // token parser
-    public Jws<Claims> parseToken(String token){
+    public Jws<Claims> parseToken(String token) {
         return Jwts.parserBuilder()
-        .setSigningKey(Keys.hmacShaKeyFor(props.getJwt().getSecret().getBytes(StandardCharsets.UTF_8)))
-        .build().parseClaimsJws(token);
+                .setSigningKey(Keys.hmacShaKeyFor(props.getJwt().getSecret().getBytes(StandardCharsets.UTF_8)))
+                .build().parseClaimsJws(token);
     }
 }

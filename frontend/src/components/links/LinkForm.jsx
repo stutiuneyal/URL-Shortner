@@ -187,7 +187,7 @@ export default function LinkForm({
                         </div>
 
                         <form onSubmit={submit} className="space-y-6 px-5 py-5 sm:px-6 sm:py-6">
-                            <section className="panel-soft p-5">
+                            <section className="panel-soft relative z-20 p-5">
                                 <div className="mb-4">
                                     <div className="soft-label mb-2">Primary Details</div>
                                     <h4 className="text-lg font-semibold text-foreground">
@@ -262,7 +262,7 @@ export default function LinkForm({
                                 </div>
                             </section>
 
-                            <section className="panel-soft p-5">
+                            <section className="panel-soft relative z-10 p-5">
                                 <button
                                     type="button"
                                     onClick={() => setShowAdvanced((v) => !v)}

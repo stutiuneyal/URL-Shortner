@@ -66,12 +66,10 @@ export default function Settings() {
           <div>
             <div className="soft-label mb-2">Settings</div>
             <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-              Account and product preferences
+              Account and workspace settings
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              This page is now styled like the rest of the product. It focuses
-              on identity, security context, workspace context, and upgrade-ready
-              placeholders for future preferences.
+              Manage your account details, workspace context, and product preferences from one place.
             </p>
           </div>
 
@@ -79,7 +77,7 @@ export default function Settings() {
             <Sparkles size={18} className="mt-0.5 text-accent" />
             <div>
               <div className="text-sm font-medium text-foreground">
-                Premium settings shell
+                Settings
               </div>
               <div className="mt-1 text-xs leading-5 text-muted-foreground">
                 Theme toggles, API keys, and notification rules can be added
@@ -139,10 +137,10 @@ export default function Settings() {
         <SettingCard
           icon={Palette}
           title="Appearance"
-          description="Current matte-black product direction and future theme settings."
+          description="Current theme and appearance preferences."
         >
           <div className="space-y-3">
-            <RowItem label="Current Theme" value="Matte black premium shell" />
+            <RowItem label="Current Theme" value="Dark workspace theme" />
             <RowItem label="Theme Toggle" value="Can be added next" />
             <RowItem label="Compact / Spacious Mode" value="Can be added next" />
           </div>
@@ -151,7 +149,7 @@ export default function Settings() {
         <SettingCard
           icon={Bell}
           title="Notifications"
-          description="A placeholder section for alerts, system messages, and email preferences."
+          description="Manage alerts, product updates, and email preferences here."
         >
           <div className="space-y-3">
             <RowItem label="Toast Notifications" value="Enabled in-app" />
@@ -164,7 +162,7 @@ export default function Settings() {
           <SettingCard
             icon={Mail}
             title="What we can add next"
-            description="This settings area is now structured enough to grow into a proper product screen."
+            description="This area is ready for more account and product controls as features expand."
           >
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <RowItem label="Profile editing" value="Next phase" />

@@ -43,6 +43,11 @@ export default function Register() {
             ...prev,
             [key]: value
         }));
+
+        setErrors((prev) => ({
+            ...prev,
+            [key]: ""
+        }));
     };
 
     const validate = () => {
@@ -116,31 +121,29 @@ export default function Register() {
                         className="w-full max-w-xl"
                     >
                         <div className="panel-soft p-8">
-                            <div className="soft-label mb-3">Start Strong</div>
+                            <div className="soft-label mb-3">Get Started</div>
                             <h2 className="text-3xl font-semibold tracking-tight text-foreground">
-                                Create a workspace that already feels like a real product
+                                Create an account and start sharing smarter links
                             </h2>
                             <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                                This isn’t just a basic form anymore. The auth experience now
-                                matches the premium dashboard direction and gives your project a
-                                far stronger first impression.
+                                Set up your workspace, create branded short links, and keep performance data easy to understand.
                             </p>
 
                             <div className="mt-8 grid gap-4">
                                 <FeatureRow
                                     icon={WandSparkles}
-                                    title="Better project identity"
-                                    description="Your product now feels intentional instead of template-based."
+                                    title="Fast setup"
+                                    description="Create your workspace quickly and start shortening links right away."
                                 />
                                 <FeatureRow
                                     icon={Sparkles}
-                                    title="Consistent premium shell"
-                                    description="Auth, dashboard, links, workspaces, and settings now share one design language."
+                                    title="Clear product experience"
+                                    description="A cleaner onboarding flow that feels polished from the very first screen."
                                 />
                                 <FeatureRow
                                     icon={LockKeyhole}
-                                    title="Ready for secure expansion"
-                                    description="This screen can cleanly grow into reset password, email verification, and session settings."
+                                    title="Built for growth"
+                                    description="Ready for richer analytics, domains, and stronger account flows as the product expands."
                                 />
                             </div>
                         </div>
@@ -177,8 +180,7 @@ export default function Register() {
                             Create your account
                         </h1>
                         <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
-                            Start building short links, organizing workspaces, and preparing
-                            for domains and richer analytics from one polished dashboard.
+                            Create your account to start shortening links, organizing workspaces, and tracking engagement.
                         </p>
 
                         <form onSubmit={onSubmit} className="mt-8 space-y-5">
@@ -237,6 +239,7 @@ export default function Register() {
                                         type="button"
                                         onClick={() => setShowPassword((v) => !v)}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
                                     >
                                         {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                                     </button>
@@ -255,8 +258,7 @@ export default function Register() {
                             </div>
 
                             <div className="panel-muted px-4 py-3 text-sm text-muted-foreground">
-                                You can add email verification, password reset, and profile settings
-                                later without redesigning this flow again.
+                                Create your workspace and start managing links in minutes.
                             </div>
 
                             <button
@@ -264,7 +266,7 @@ export default function Register() {
                                 disabled={submitting}
                                 className="btn-primary-premium w-full disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                {submitting ? "Creating account..." : "Create Account"}
+                                {submitting ? "Creating account..." : "Create account"}
                                 {!submitting ? <ArrowRight size={16} /> : null}
                             </button>
 

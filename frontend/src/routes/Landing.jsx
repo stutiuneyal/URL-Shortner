@@ -100,7 +100,7 @@ function NavBar({ isAuthed, activeSection, scrolled }) {
                             URL Shortener
                         </div>
                         <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                            Premium matte platform
+                            Link Management Platform
                         </div>
                     </div>
                 </Link>
@@ -161,19 +161,17 @@ function Hero({ isAuthed }) {
                     transition={{ duration: 0.5, ease: "easeOut" }}
                     className="flex flex-col justify-center"
                 >
-                    <ProductPill>Built for campaigns, teams, and premium sharing</ProductPill>
+                    <ProductPill>Built for campaigns, teams, and smarter sharing</ProductPill>
 
                     <h1 className="mt-6 max-w-5xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-[4.2rem] lg:leading-[1.02]">
                         Manage short links with
                         <span className="mt-2 block bg-gradient-to-r from-white via-white to-accent bg-clip-text text-transparent">
-                            elegance, analytics, and complete control.
+                            clarity, analytics, and control.
                         </span>
                     </h1>
 
                     <p className="mt-6 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
-                        Create branded links, organize workspaces, protect destinations, export QR
-                        assets, and understand performance through a polished product experience that
-                        feels built for real usage.
+                        Create short links, organize workspaces, protect destinations, export QR codes, and understand performance through a product built for real use.
                     </p>
 
                     <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -190,7 +188,7 @@ function Hero({ isAuthed }) {
                         ) : (
                             <>
                                 <Link to="/register" className="btn-primary-premium">
-                                    Create Account
+                                    Create account
                                     <ArrowRight size={16} />
                                 </Link>
                                 <Link to="/login" className="btn-secondary-premium">
@@ -204,17 +202,17 @@ function Hero({ isAuthed }) {
                         <StatCard
                             label="Analytics"
                             value="Live"
-                            helper="Track clicks, devices, browsers, and traffic sources."
+                            helper="Track clicks, devices, browsers, and traffic sources in one place."
                         />
                         <StatCard
                             label="Security"
                             value="Built-in"
-                            helper="Protect selected links with a clean gated access flow."
+                            helper="Protect selected links with password-based access."
                         />
                         <StatCard
                             label="Operations"
                             value="Complete"
-                            helper="Inspect, export, pause, resume, and archive with ease."
+                            helper="Inspect, export, pause, resume, and archive links with ease."
                         />
                     </div>
                 </motion.div>

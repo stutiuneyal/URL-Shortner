@@ -157,7 +157,8 @@ export default function LinkTable({
     onCreate,
     onEdit,
     onDelete,
-    onViewDetails
+    onViewDetails,
+    tableTourAttr
 }) {
     const pushToast = useUiStore((s) => s.pushToast);
 
@@ -218,7 +219,7 @@ export default function LinkTable({
 
     return (
         <>
-            <section className="panel-soft overflow-hidden">
+            <section data-tour={tableTourAttr} className="panel-soft overflow-hidden">
                 <div className="border-b border-border px-5 py-5 sm:px-6">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
@@ -231,7 +232,7 @@ export default function LinkTable({
                             </p>
                         </div>
 
-                        <button type="button" onClick={onCreate} className="btn-primary-premium self-start">
+                        <button data-tour="create-link-entry" type="button" onClick={onCreate} className="btn-primary-premium self-start">
                             <Plus size={16} />
                             Create Link
                         </button>
@@ -276,13 +277,14 @@ export default function LinkTable({
                         <EmptyState onCreate={onCreate} />
                     ) : (
                         <div className="grid gap-4">
-                            {filtered.map((row) => {
+                            {filtered.map((row, index) => {
                                 const shortUrl = `${baseUrl}/r/${row.slug}`;
                                 const domainLabel = row.domainId ? domainMap.get(row.domainId) : null;
 
                                 return (
                                     <motion.div
                                         key={row.id}
+                                        data-tour={index === 0 ? "link-row-first" : undefined}
                                         layout
                                         initial={{ opacity: 0, y: 8 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -372,7 +374,7 @@ export default function LinkTable({
                                                 )}
                                             </div>
 
-                                            <div className="flex shrink-0 flex-wrap gap-2 xl:w-[260px] xl:justify-end">
+                                            <div data-tour={index === 0 ? "link-row-actions-first" : undefined} className="flex shrink-0 flex-wrap gap-2 xl:w-[260px] xl:justify-end">
                                                 <button
                                                     type="button"
                                                     onClick={() => onViewDetails(row)}

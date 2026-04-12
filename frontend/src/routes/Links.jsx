@@ -18,6 +18,8 @@ import { exportLinkAnalyticsCsv, getLinkAnalytics } from "../api/analytics.api";
 import LinkTable from "../components/links/LinkTable";
 import LinkForm from "../components/links/LinkForm";
 import LinkDetailsDrawer from "../components/links/LinkDetailsDrawer";
+import { useOnboardingStore } from "../store/onboarding.store";
+import { waitForElement } from "../tours/tourUtils";
 
 function formatNumber(value) {
     return new Intl.NumberFormat("en-IN").format(value || 0);
@@ -77,6 +79,9 @@ export default function Links() {
     const [detailsActionLoading, setDetailsActionLoading] = useState(false);
     const [selectedAnalytics, setSelectedAnalytics] = useState(null);
 
+    const hasSeenLinkTour = useOnboardingStore((s) => s.hasSeenLinkTour);
+    const startTour = useOnboardingStore((s) => s.startTour);
+
     const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8091";
 
     const load = useCallback(async () => {
@@ -124,7 +129,9 @@ export default function Links() {
         setSubmitting(true);
 
         try {
-            if (editing?.id) {
+            const isEditing = Boolean(editing?.id);
+
+            if (isEditing) {
                 await updateLink(editing.id, payload);
                 pushToast({
                     type: "success",
@@ -143,6 +150,22 @@ export default function Links() {
             setOpenForm(false);
             setEditing(null);
             await load();
+
+            if (!isEditing && !hasSeenLinkTour) {
+                setTimeout(async () => {
+                    const rowReady = await waitForElement('[data-tour="link-row-first"]', 4000);
+
+                    if (!rowReady) return;
+
+                    const firstRow = document.querySelector('[data-tour="link-row-first"]');
+                    firstRow?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+                    setTimeout(() => {
+                        document.body.classList.add("tour-active");
+                        startTour("link");
+                    }, 350);
+                }, 250);
+            }
         } catch (error) {
             console.error("Failed to save link", error);
         } finally {
@@ -251,6 +274,7 @@ export default function Links() {
         <>
             <div className="space-y-6">
                 <motion.section
+                    data-tour="links-page-overview"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="panel-soft overflow-hidden"
@@ -304,6 +328,7 @@ export default function Links() {
                     onEdit={handleEditOpen}
                     onDelete={handleDelete}
                     onViewDetails={openDetails}
+                    tableTourAttr="links-table"
                 />
 
                 <LinkForm

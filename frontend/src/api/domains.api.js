@@ -27,7 +27,7 @@ export const createDomain = async (payload) => {
         return response.data;
     } catch (error) {
         if (isUnsupportedEndpoint(error)) {
-            const friendly = new Error("Domain management backend is not implemented yet.");
+            const friendly = new Error("Domain management is still being set up.");
             friendly.code = "DOMAIN_BACKEND_NOT_READY";
             throw friendly;
         }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.personal.urlshortner.dto.auth.LoginRequest;
+import com.personal.urlshortner.dto.auth.RefreshTokenRequest;
 import com.personal.urlshortner.dto.auth.RegisterRequest;
 import com.personal.urlshortner.service.IAuthService;
 
@@ -31,6 +32,12 @@ public class AuthController {
     public ResponseEntity<?> loginUser(
             @Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.loginUser(request));
+    }
+
+    @RequestMapping(value = "/refresh", method = RequestMethod.POST)
+    public ResponseEntity<?> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refreshAccessToken(request));
     }
 
 }

@@ -95,7 +95,7 @@ export default function TopNav() {
                                     </div>
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                         <Sparkles size={12} className="text-accent" />
-                                        Premium workspace
+                                        Active workspace
                                     </div>
                                 </div>
 
@@ -120,7 +120,7 @@ export default function TopNav() {
                                                 {user?.email || "Signed in"}
                                             </div>
                                             <div className="mt-1 text-xs text-muted-foreground">
-                                                Manage your links from one premium workspace.
+                                                Manage your links and settings from one place.
                                             </div>
                                         </div>
 

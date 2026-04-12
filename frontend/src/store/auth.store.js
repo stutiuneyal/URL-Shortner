@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-const LOCAL_KEY = "auth-v1";
+const LOCAL_KEY = "auth-v2";
 
 function safeReadAuth() {
     try {
@@ -11,43 +11,83 @@ function safeReadAuth() {
     }
 }
 
-export const useAuthStore = create((set) => ({
+function persistAuth(auth) {
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(auth))
+}
+
+function clearPersistedAuth() {
+    localStorage.removeItem(LOCAL_KEY)
+}
+
+export const useAuthStore = create((set, get) => ({
+    hydrated: false,
     user: null,
-    token: null,
+    accessToken: null,
+    refreshToken: null,
+    accessTokenExpiresAt: null,
 
     init: () => {
         const auth = safeReadAuth();
-        if (auth?.user && auth?.token) {
+        if (auth?.user && auth?.accessToken) {
             set({
-                user: auth.user,
-                token: auth.token
+                hydrated: true,
+                user: auth.user || null,
+                accessToken: auth.accessToken || null,
+                refreshToken: auth.refreshToken || null,
+                accessTokenExpiresAt: auth.accessTokenExpiresAt || null
             });
+            return;
         }
+
+        set({
+            hydrated: true,
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            accessTokenExpiresAt: null
+        });
     },
 
     login: ({ user, tokens }) => {
-        const accessToken = tokens?.accessToken || null;
+        const nextAuth = {
+            user: user || null,
+            accessToken: tokens?.accessToken || null,
+            refreshToken: tokens?.refreshToken || null,
+            accessTokenExpiresAt: tokens?.accessTokenExpiresAt || null
+        };
 
         set({
-            user: user || null,
-            token: accessToken
+            hydrated: true,
+            ...nextAuth
         });
 
-        localStorage.setItem(
-            LOCAL_KEY,
-            JSON.stringify({
-                user: user || null,
-                token: accessToken
-            })
-        );
+        persistAuth(nextAuth)
+
+    },
+
+    updateAccessToken: ({ accessToken, accessTokenExpiresAt }) => {
+        const state = get();
+
+        const nextAuth = {
+            user: state.user,
+            accessToken: accessToken || null,
+            refreshToken: state.refreshToken,
+            accessTokenExpiresAt: accessTokenExpiresAt || null
+        };
+
+        set(nextAuth);
+        persistAuth(nextAuth);
     },
 
     logout: () => {
         set({
+            hydrated: true,
             user: null,
-            token: null
+            accessToken: null,
+            refreshToken: null,
+            accessTokenExpiresAt: null
         });
 
-        localStorage.removeItem(LOCAL_KEY);
+        clearPersistedAuth();
     }
 }));
