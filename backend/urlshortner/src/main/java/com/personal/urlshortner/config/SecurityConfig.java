@@ -32,13 +32,13 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(req-> {
             CorsConfiguration configuration = new CorsConfiguration();
             configuration.setAllowedOriginPatterns(List.of("*"));
-            configuration.setAllowedMethods(List.of("GET","POST","PATCH","DELETE"));
+            configuration.setAllowedMethods(List.of("GET","POST","PATCH","DELETE","OPTIONS"));
             configuration.setAllowedHeaders(List.of("*"));
             configuration.setAllowCredentials(true);
             return configuration;
         }))
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(reg -> reg.requestMatchers("/health","/r/**","/api/auth/**").permitAll()
+        .authorizeHttpRequests(reg -> reg.requestMatchers("/health","/r/**","/api/auth/**", "/ws/**").permitAll()
         .anyRequest().authenticated())
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

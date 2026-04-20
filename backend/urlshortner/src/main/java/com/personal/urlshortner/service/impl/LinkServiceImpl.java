@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.personal.urlshortner.dto.link.CreateLinkRequest;
+import com.personal.urlshortner.dto.websocket.LinkClickRealtimeEvent;
+import com.personal.urlshortner.dto.websocket.LinkClickRealtimePublisher;
 import com.personal.urlshortner.model.ClickEvent;
 import com.personal.urlshortner.model.Domain;
 import com.personal.urlshortner.model.Link;
@@ -50,6 +52,9 @@ public class LinkServiceImpl implements ILinkService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private LinkClickRealtimePublisher linkClickRealtimePublisher;
 
     @Override
     public Link createLink(String userId, CreateLinkRequest request) {
@@ -256,9 +261,14 @@ public class LinkServiceImpl implements ILinkService {
     @Async
     public void recordClick(String linkId, String referer, String userAgent, String ipAddress) {
         linkRepository.findById(linkId).ifPresent(link -> {
+
+            Instant now = Instant.now();
+
             long currentClicks = link.getClicks() == null ? 0L : link.getClicks();
-            link.setClicks(currentClicks + 1);
-            link.setLastClickedAt(Instant.now());
+            long updatedClicks = currentClicks + 1;
+
+            link.setClicks(updatedClicks);
+            link.setLastClickedAt(now);
             linkRepository.save(link);
 
             ClickEvent event = ClickEvent.builder()
@@ -270,16 +280,32 @@ public class LinkServiceImpl implements ILinkService {
                     .browser(resolveBrowser(userAgent))
                     .deviceType(resolveDeviceType(userAgent))
                     .country("Unknown")
-                    .createdAt(Instant.now())
+                    .createdAt(now)
                     .build();
 
             clickEventRepository.save(event);
             redisTemplate.delete(getRedisKey(link.getSlug()));
+
+            linkClickRealtimePublisher.publish(
+                    LinkClickRealtimeEvent.builder()
+                            .type("LINK_CREATED")
+                            .workspaceId(link.getWorkspaceId())
+                            .linkId(link.getId())
+                            .slug(link.getSlug())
+                            .clicks(updatedClicks)
+                            .lastClickedAt(now.toString())
+                            .referrer(event.getReferer())
+                            .browser(event.getBrowser())
+                            .deviceType(event.getDeviceType())
+                            .country(event.getCountry())
+                            .createdAt(now.toString())
+                            .build());
         });
     }
 
     @Override
-    public String unlockProtectedLink(String slug, String password, String referer, String userAgent, String ipAddress) {
+    public String unlockProtectedLink(String slug, String password, String referer, String userAgent,
+            String ipAddress) {
         if (password == null || password.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
         }
@@ -316,6 +342,22 @@ public class LinkServiceImpl implements ILinkService {
                 .build();
 
         clickEventRepository.save(event);
+
+        linkClickRealtimePublisher.publish(
+                LinkClickRealtimeEvent.builder()
+                        .type("LINK_CLICKED")
+                        .workspaceId(link.getWorkspaceId())
+                        .linkId(link.getId())
+                        .slug(link.getSlug())
+                        .clicks(nextClicks)
+                        .lastClickedAt(link.getLastClickedAt() != null ? link.getLastClickedAt().toString() : null)
+                        .referrer(event.getReferer())
+                        .browser(event.getBrowser())
+                        .deviceType(event.getDeviceType())
+                        .country(event.getCountry())
+                        .createdAt(event.getCreatedAt() != null ? event.getCreatedAt().toString() : null)
+                        .build());
+
         putRedirectCache(link);
 
         return link.getTarget();

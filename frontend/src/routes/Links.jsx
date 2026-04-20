@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Link2, MousePointerClick, Activity, ShieldCheck } from "lucide-react";
 import { useWsStore } from "../store/ws.store";
@@ -20,6 +20,7 @@ import LinkForm from "../components/links/LinkForm";
 import LinkDetailsDrawer from "../components/links/LinkDetailsDrawer";
 import { useOnboardingStore } from "../store/onboarding.store";
 import { waitForElement } from "../tours/tourUtils";
+import { connectRealtime, subscribeTopic, unsubscribeTopic } from "../lib/realtime";
 
 function formatNumber(value) {
     return new Intl.NumberFormat("en-IN").format(value || 0);
@@ -78,11 +79,102 @@ export default function Links() {
     const [detailsLoading, setDetailsLoading] = useState(false);
     const [detailsActionLoading, setDetailsActionLoading] = useState(false);
     const [selectedAnalytics, setSelectedAnalytics] = useState(null);
+    const detailsRefreshTimeoutRef = useRef(null);
 
     const hasSeenLinkTour = useOnboardingStore((s) => s.hasSeenLinkTour);
     const startTour = useOnboardingStore((s) => s.startTour);
 
     const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8091";
+
+    useEffect(() => {
+        if (!ws?.id) return undefined;
+
+        connectRealtime();
+
+        const workspaceTopicKey = `workspace-links-${ws.id}`;
+        subscribeTopic(
+            workspaceTopicKey,
+            `/topic/workspaces/${ws.id}/links`,
+            (event) => {
+                if (!event?.linkId) return;
+
+                setItems((prev) =>
+                    prev.map((item) =>
+                        item.id === event.linkId
+                            ? {
+                                ...item,
+                                clicks: event.clicks ?? item.clicks,
+                                lastClickedAt: event.lastClickedAt ?? item.lastClickedAt
+                            }
+                            : item
+                    )
+                );
+
+                setSelectedLink((prev) =>
+                    prev?.id === event.linkId
+                        ? {
+                            ...prev,
+                            clicks: event.clicks ?? prev.clicks,
+                            lastClickedAt: event.lastClickedAt ?? prev.lastClickedAt
+                        }
+                        : prev
+                );
+
+                setSelectedAnalytics((prev) => {
+                    if (!prev || prev?.link?.id !== event.linkId) return prev;
+
+                    const nextRecentClicks = [
+                        {
+                            id: `rt-${event.createdAt || Date.now()}`,
+                            createdAt: event.createdAt,
+                            referer: event.referer || "Direct",
+                            browser: event.browser || "Unknown",
+                            deviceType: event.deviceType || "Unknown",
+                            country: event.country || "Unknown"
+                        },
+                        ...(prev.recentClicks || [])
+                    ].slice(0, 15);
+
+                    return {
+                        ...prev,
+                        link: {
+                            ...prev.link,
+                            clicks: event.clicks ?? prev.link?.clicks,
+                            lastClickedAt: event.lastClickedAt ?? prev.link?.lastClickedAt
+                        },
+                        summary: {
+                            ...prev.summary,
+                            totalClicks: event.clicks ?? prev.summary?.totalClicks,
+                            lastClickedAt: event.lastClickedAt ?? prev.summary?.lastClickedAt
+                        },
+                        recentClicks: nextRecentClicks
+                    };
+                });
+
+                if (selectedLink?.id === event.linkId) {
+                    if (detailsRefreshTimeoutRef.current) {
+                        clearTimeout(detailsRefreshTimeoutRef.current);
+                    }
+
+                    detailsRefreshTimeoutRef.current = setTimeout(async () => {
+                        try {
+                            const fresh = await getLinkAnalytics(event.linkId);
+                            setSelectedAnalytics(fresh);
+                        } catch (error) {
+                            console.error("Failed to refresh detailed analytics after realtime event", error);
+                        }
+                    }, 1200);
+                }
+            }
+        );
+
+        return () => {
+            unsubscribeTopic(workspaceTopicKey);
+            if (detailsRefreshTimeoutRef.current) {
+                clearTimeout(detailsRefreshTimeoutRef.current);
+            }
+        };
+    }, [ws?.id, selectedLink?.id]);
 
     const load = useCallback(async () => {
         if (!ws?.id) {

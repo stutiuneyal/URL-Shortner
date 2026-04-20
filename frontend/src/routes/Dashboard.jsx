@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import {
     Activity,
@@ -23,6 +23,7 @@ import { getDashboardAnalytics } from "../api/analytics.api";
 import { useWsStore } from "../store/ws.store";
 import { useOnboardingStore } from "../store/onboarding.store";
 import { waitForElement } from "../tours/tourUtils";
+import { connectRealtime, subscribeTopic, unsubscribeTopic } from "../lib/realtime";
 
 function formatDate(value) {
     if (!value) return "—";
@@ -160,6 +161,8 @@ export default function Dashboard() {
     const hasSeenDashboardTour = useOnboardingStore((s) => s.hasSeenDashboardTour);
     const startTour = useOnboardingStore((s) => s.startTour);
 
+    const dashboardRefreshTimeoutRef = useRef(null);
+
     useEffect(() => {
         let mounted = true;
 
@@ -186,6 +189,41 @@ export default function Dashboard() {
 
         return () => {
             mounted = false;
+        };
+    }, [ws?.id]);
+
+    useEffect(() => {
+        if (!ws?.id) return undefined;
+
+        connectRealtime();
+
+        const topicKey = `workspace-dashboard-${ws.id}`;
+        subscribeTopic(
+            topicKey,
+            `/topic/workspaces/${ws.id}/dashboard`,
+            async (event) => {
+                if (event?.type !== "DASHBOARD_REFRESH_REQUIRED") return;
+
+                if (dashboardRefreshTimeoutRef.current) {
+                    clearTimeout(dashboardRefreshTimeoutRef.current);
+                }
+
+                dashboardRefreshTimeoutRef.current = setTimeout(async () => {
+                    try {
+                        const data = await getDashboardAnalytics(ws.id);
+                        setDashboard(data || {});
+                    } catch (error) {
+                        console.error("Failed to refresh dashboard from realtime event", error);
+                    }
+                }, 800);
+            }
+        );
+
+        return () => {
+            unsubscribeTopic(topicKey);
+            if (dashboardRefreshTimeoutRef.current) {
+                clearTimeout(dashboardRefreshTimeoutRef.current);
+            }
         };
     }, [ws?.id]);
 

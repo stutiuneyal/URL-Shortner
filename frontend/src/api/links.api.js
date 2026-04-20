@@ -46,3 +46,8 @@ export const unarchiveLink = async (id) => {
     const response = await http.post(`/api/links/${id}/unarchive`);
     return response.data;
 };
+
+export const getSlugSuggestions = async (payload) => {
+    const response = await http.post("/api/links/slug-suggestions", payload);
+    return response.data;
+};

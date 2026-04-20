@@ -2,16 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
     CalendarClock,
+    Check,
     Globe2,
     Hash,
+    Lightbulb,
     LockKeyhole,
     Plus,
     Settings2,
+    Sparkles,
     Tag,
     X
 } from "lucide-react";
 import AppSelect from "../ui/AppSelect";
 import FormField from "../ui/FormField";
+import { getSlugSuggestions } from "../../api/links.api";
 
 function toDateTimeLocalValue(value) {
     if (!value) return "";
@@ -55,6 +59,21 @@ function validateSlug(slug) {
         : "Slug must be 4–32 characters and use only letters, numbers, underscore, or hyphen.";
 }
 
+function styleToneClass(style) {
+    switch ((style || "").toLowerCase()) {
+        case "seo":
+            return "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
+        case "brandable":
+            return "border-violet-400/20 bg-violet-400/10 text-violet-200";
+        case "technical":
+            return "border-sky-400/20 bg-sky-400/10 text-sky-200";
+        case "clean":
+            return "border-white/10 bg-white/[0.06] text-zinc-200";
+        default:
+            return "border-white/10 bg-white/[0.06] text-zinc-200";
+    }
+}
+
 export default function LinkForm({
     open,
     loading,
@@ -68,24 +87,35 @@ export default function LinkForm({
     const [tagsInput, setTagsInput] = useState((initialValues?.tags || []).join(", "));
     const [showAdvanced, setShowAdvanced] = useState(Boolean(initialValues));
     const [errors, setErrors] = useState({});
+    const [slugSuggestions, setSlugSuggestions] = useState([]);
+    const [slugLoading, setSlugLoading] = useState(false);
+    const [slugError, setSlugError] = useState("");
 
     useEffect(() => {
         setForm(buildInitialState(initialValues));
         setTagsInput((initialValues?.tags || []).join(", "));
         setShowAdvanced(Boolean(initialValues));
         setErrors({});
+        setSlugSuggestions([]);
+        setSlugLoading(false);
+        setSlugError("");
     }, [initialValues, open]);
 
-    const slugError = useMemo(() => validateSlug(form.slug), [form.slug]);
+    const fieldSlugError = useMemo(() => validateSlug(form.slug), [form.slug]);
+
+    const selectedSuggestion = useMemo(
+        () => slugSuggestions.find((item) => item.slug === form.slug),
+        [slugSuggestions, form.slug]
+    );
 
     const domainOptions = useMemo(() => {
         const base = [{ value: "", label: "Default domain" }];
         const custom =
             Array.isArray(domains) && domains.length
                 ? domains.map((domain) => ({
-                    value: String(domain.id),
-                    label: domain.hostname
-                }))
+                      value: String(domain.id),
+                      label: domain.hostname
+                  }))
                 : [];
 
         return [...base, ...custom];
@@ -96,6 +126,68 @@ export default function LinkForm({
             ...prev,
             [key]: value
         }));
+
+        if (key === "slug") {
+            setErrors((prev) => ({
+                ...prev,
+                slug: ""
+            }));
+        }
+    };
+
+    const handleSelectSuggestedSlug = (slug) => {
+        handleChange("slug", slug);
+        setSlugError("");
+    };
+
+    const handleSuggestSlugs = async () => {
+        setSlugError("");
+        setSlugSuggestions([]);
+
+        if (!form.target.trim()) {
+            setSlugError("Enter a target URL first.");
+            return;
+        }
+
+        try {
+            const url = new URL(form.target.trim());
+            if (!/^https?:$/.test(url.protocol)) {
+                setSlugError("Only http and https URLs are supported.");
+                return;
+            }
+        } catch {
+            setSlugError("Enter a valid target URL first.");
+            return;
+        }
+
+        try {
+            setSlugLoading(true);
+
+            const response = await getSlugSuggestions({
+                workspaceId,
+                domainId: form.domainId || undefined,
+                target: form.target.trim(),
+                brandHint: "apurv"
+            });
+
+            const suggestions = Array.isArray(response?.suggestions)
+                ? response.suggestions
+                : [];
+
+            setSlugSuggestions(suggestions);
+
+            if (!suggestions.length) {
+                setSlugError("No suggestions were generated for this URL.");
+            }
+        } catch (error) {
+            setSlugError(
+                error?.response?.data?.message ||
+                    error?.message ||
+                    "Could not generate slug suggestions right now."
+            );
+        } finally {
+            setSlugLoading(false);
+        }
     };
 
     const submit = async (e) => {
@@ -116,8 +208,8 @@ export default function LinkForm({
             }
         }
 
-        if (slugError) {
-            nextErrors.slug = slugError;
+        if (fieldSlugError) {
+            nextErrors.slug = fieldSlugError;
         }
 
         if (form.clickLimit && Number(form.clickLimit) < 1) {
@@ -133,9 +225,7 @@ export default function LinkForm({
             target: form.target.trim(),
             slug: form.slug.trim() || undefined,
             domainId: form.domainId || undefined,
-            expiresAt: form.expiresAt
-                ? new Date(form.expiresAt).toISOString()
-                : undefined,
+            expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : undefined,
             clickLimit: form.clickLimit ? Number(form.clickLimit) : undefined,
             password: form.password.trim() || undefined,
             utmStrip: Boolean(form.utmStrip),
@@ -159,9 +249,9 @@ export default function LinkForm({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.98 }}
                         transition={{ duration: 0.2 }}
-                        className="panel premium-scrollbar max-h-[92vh] w-full max-w-3xl overflow-auto"
+                        className="panel premium-scrollbar relative isolate max-h-[92vh] w-full max-w-4xl overflow-auto"
                     >
-                        <div className="sticky top-0 z-10 border-b border-border bg-panel/85 px-5 py-5 backdrop-blur-xl sm:px-6">
+                        <div className="sticky top-0 z-30 border-b border-white/10 bg-[#0b0b10]/95 px-5 py-5 backdrop-blur-2xl sm:px-6">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
                                     <div className="soft-label mb-2">
@@ -171,8 +261,8 @@ export default function LinkForm({
                                         {initialValues ? "Refine your short link" : "Create a new short link"}
                                     </h3>
                                     <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                                        A cleaner form with better grouping for URL setup, branding,
-                                        expiry, protection, and tagging.
+                                        Set where your link goes and shape how it looks. Use AI to generate
+                                        clearer, more memorable slug options before publishing.
                                     </p>
                                 </div>
 
@@ -184,18 +274,20 @@ export default function LinkForm({
                                     <X size={16} />
                                 </button>
                             </div>
+
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent to-[#0b0b10]/85" />
                         </div>
 
-                        <form onSubmit={submit} className="space-y-6 px-5 py-5 sm:px-6 sm:py-6">
+                        <form onSubmit={submit} className="space-y-6 px-5 pb-6 pt-4 sm:px-6 sm:pb-6 sm:pt-5">
                             <section className="panel-soft relative z-20 p-5">
-                                <div className="mb-4">
+                                <div className="mb-5">
                                     <div className="soft-label mb-2">Primary Details</div>
                                     <h4 className="text-lg font-semibold text-foreground">
                                         Destination and slug
                                     </h4>
                                 </div>
 
-                                <div className="grid gap-5">
+                                <div className="grid gap-6">
                                     <FormField
                                         label="Target URL"
                                         hint={
@@ -216,31 +308,66 @@ export default function LinkForm({
                                         ) : null}
                                     </FormField>
 
-                                    <div className="grid gap-5 md:grid-cols-2">
-                                        <FormField
-                                            label="Custom slug"
-                                            hint={
-                                                errors.slug
-                                                    ? errors.slug
-                                                    : "Optional. Leave empty to auto-generate."
-                                            }
-                                        >
-                                            <div className="relative">
-                                                <Hash
-                                                    size={15}
-                                                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-                                                />
-                                                <input
-                                                    value={form.slug}
-                                                    onChange={(e) => handleChange("slug", e.target.value)}
-                                                    placeholder="my-campaign"
-                                                    className="input-premium pl-11"
-                                                />
-                                            </div>
-                                            {errors.slug ? (
-                                                <div className="mt-2 text-sm text-danger">{errors.slug}</div>
+                                    <div className="grid gap-5 xl:grid-cols-[1.35fr_0.9fr]">
+                                        <div className="space-y-4">
+                                            <FormField
+                                                label="Custom slug"
+                                                hint={
+                                                    errors.slug
+                                                        ? errors.slug
+                                                        : "Optional. Leave empty to auto-generate or use AI suggestions below."
+                                                }
+                                            >
+                                                <div className="flex flex-col gap-3 lg:flex-row">
+                                                    <div className="relative flex-1">
+                                                        <Hash
+                                                            size={15}
+                                                            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                                        />
+                                                        <input
+                                                            value={form.slug}
+                                                            onChange={(e) => handleChange("slug", e.target.value)}
+                                                            placeholder="my-campaign"
+                                                            className="input-premium pl-11"
+                                                        />
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleSuggestSlugs}
+                                                        disabled={slugLoading}
+                                                        className="btn-secondary-premium inline-flex min-w-[170px] items-center justify-center gap-2 whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        <Sparkles size={15} />
+                                                        {slugLoading ? "Generating..." : "Suggest Slugs"}
+                                                    </button>
+                                                </div>
+
+                                                {errors.slug ? (
+                                                    <div className="mt-2 text-sm text-danger">{errors.slug}</div>
+                                                ) : null}
+                                            </FormField>
+
+                                            {selectedSuggestion ? (
+                                                <div className="rounded-2xl border border-accent/20 bg-accent/10 px-4 py-3">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl bg-accent/20 text-accent">
+                                                            <Check size={15} />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="text-sm font-medium text-foreground">
+                                                                Selected AI slug: {selectedSuggestion.slug}
+                                                            </div>
+                                                            {selectedSuggestion.reason ? (
+                                                                <div className="mt-1 text-sm leading-6 text-muted-foreground">
+                                                                    {selectedSuggestion.reason}
+                                                                </div>
+                                                            ) : null}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             ) : null}
-                                        </FormField>
+                                        </div>
 
                                         <FormField
                                             label="Domain"
@@ -259,6 +386,98 @@ export default function LinkForm({
                                             />
                                         </FormField>
                                     </div>
+
+                                    {(slugError || slugSuggestions.length > 0) && (
+                                        <div className="rounded-[1.5rem] border border-border bg-white/[0.025] p-4 sm:p-5">
+                                            <div className="mb-4 flex items-start justify-between gap-4">
+                                                <div>
+                                                    <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                                                        <Sparkles size={13} />
+                                                        AI Suggestions
+                                                    </div>
+                                                    <div className="mt-2 text-sm text-muted-foreground">
+                                                        Pick one suggestion to fill the slug automatically.
+                                                    </div>
+                                                </div>
+
+                                                {slugSuggestions.length > 0 ? (
+                                                    <div className="rounded-full border border-border bg-white/[0.04] px-2.5 py-1 text-xs text-muted-foreground">
+                                                        {slugSuggestions.length} options
+                                                    </div>
+                                                ) : null}
+                                            </div>
+
+                                            {slugError ? (
+                                                <div className="rounded-2xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger">
+                                                    {slugError}
+                                                </div>
+                                            ) : null}
+
+                                            {slugSuggestions.length > 0 ? (
+                                                <div className="grid gap-3">
+                                                    {slugSuggestions.map((item) => {
+                                                        const active = form.slug === item.slug;
+
+                                                        return (
+                                                            <button
+                                                                key={item.slug}
+                                                                type="button"
+                                                                onClick={() => handleSelectSuggestedSlug(item.slug)}
+                                                                className={`w-full rounded-[1.35rem] border p-4 text-left transition ${
+                                                                    active
+                                                                        ? "border-accent bg-accent/10 shadow-[0_0_0_1px_rgba(167,139,250,0.18)]"
+                                                                        : "border-border bg-white/[0.03] hover:bg-white/[0.05]"
+                                                                }`}
+                                                            >
+                                                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                                                    <div className="min-w-0">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div
+                                                                                className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                                                                                    active
+                                                                                        ? "border-accent bg-accent text-black"
+                                                                                        : "border-white/20"
+                                                                                }`}
+                                                                            >
+                                                                                {active ? <Check size={12} /> : null}
+                                                                            </div>
+
+                                                                            <div className="truncate text-base font-semibold text-foreground">
+                                                                                {item.slug}
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {item.reason ? (
+                                                                            <div className="mt-3 pl-7 text-sm leading-6 text-muted-foreground">
+                                                                                {item.reason}
+                                                                            </div>
+                                                                        ) : null}
+                                                                    </div>
+
+                                                                    {item.style ? (
+                                                                        <div
+                                                                            className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] ${styleToneClass(
+                                                                                item.style
+                                                                            )}`}
+                                                                        >
+                                                                            {item.style}
+                                                                        </div>
+                                                                    ) : null}
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : null}
+
+                                            {slugSuggestions.length > 0 ? (
+                                                <div className="mt-4 flex items-start gap-2 rounded-2xl border border-white/8 bg-white/[0.025] px-4 py-3 text-sm text-muted-foreground">
+                                                    <Lightbulb size={15} className="mt-0.5 shrink-0" />
+                                                    Click any suggestion to use it, or keep editing the slug manually.
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    )}
                                 </div>
                             </section>
 
@@ -388,12 +607,14 @@ export default function LinkForm({
                                                 <button
                                                     type="button"
                                                     onClick={() => handleChange("utmStrip", !form.utmStrip)}
-                                                    className={`relative h-7 w-12 rounded-full transition ${form.utmStrip ? "bg-accent" : "bg-white/[0.1]"
-                                                        }`}
+                                                    className={`relative h-7 w-12 rounded-full transition ${
+                                                        form.utmStrip ? "bg-accent" : "bg-white/[0.1]"
+                                                    }`}
                                                 >
                                                     <span
-                                                        className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${form.utmStrip ? "left-6" : "left-1"
-                                                            }`}
+                                                        className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${
+                                                            form.utmStrip ? "left-6" : "left-1"
+                                                        }`}
                                                     />
                                                 </button>
                                             </div>
@@ -404,12 +625,16 @@ export default function LinkForm({
 
                             <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="text-xs leading-5 text-muted-foreground">
-                                    Workspace ID will be attached automatically. Rules-based routing
-                                    can be added later as an advanced enhancement.
+                                    Workspace ID will be attached automatically. AI suggestions help with slug ideas,
+                                    but the final slug is still validated by the backend before save.
                                 </div>
 
                                 <div className="flex items-center justify-end gap-3">
-                                    <button type="button" onClick={onCancel} className="btn-secondary-premium">
+                                    <button
+                                        type="button"
+                                        onClick={onCancel}
+                                        className="btn-secondary-premium"
+                                    >
                                         Cancel
                                     </button>
 
@@ -424,8 +649,8 @@ export default function LinkForm({
                                                 ? "Saving..."
                                                 : "Creating..."
                                             : initialValues
-                                                ? "Save Changes"
-                                                : "Create Link"}
+                                            ? "Save Changes"
+                                            : "Create Link"}
                                     </button>
                                 </div>
                             </div>
