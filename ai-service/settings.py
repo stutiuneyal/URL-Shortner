@@ -1,10 +1,14 @@
-from pydantic_settings import BaseSettings
+import os
+from dotenv import load_dotenv
 
-class Settings(BaseSettings):
-    OPENAI_API_KEY: str | None = None
-    OPENAI_MODEL: str = "gpt-4o-mini"
+load_dotenv()
 
-    class Config:
-        env_file = ".env"
+
+class Settings:
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
+    APP_NAME: str = os.getenv("APP_NAME", "URL Shortener AI Service")
+    APP_ENV: str = os.getenv("APP_ENV", "local")
+
 
 settings = Settings()

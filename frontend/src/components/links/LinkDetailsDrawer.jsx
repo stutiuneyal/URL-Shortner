@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
     Archive,
@@ -10,9 +11,11 @@ import {
     X
 } from "lucide-react";
 import { useUiStore } from "../../store/ui.store";
+import { getLinkInsights } from "../../api/links.api";
 import LinkAnalyticsPanel from "./LinkAnalyticsPanel";
 import LinkRecentClicksList from "./LinkRecentClicksList";
 import LinkQrPanel from "./LinkQRPanel";
+import LinkAiChatPanel from "./LinkAiChatPanel";
 
 function formatDateTime(value) {
     if (!value) return "—";
@@ -49,8 +52,52 @@ export default function LinkDetailsDrawer({
     actionLoading
 }) {
     const pushToast = useUiStore((s) => s.pushToast);
-    const link = analytics?.link;
     const summary = analytics?.summary;
+
+    const link = analytics?.link;
+
+    const [aiInsights, setAiInsights] = useState(null);
+    const [aiInsightsLoading, setAiInsightsLoading] = useState(false);
+    const [aiInsightsError, setAiInsightsError] = useState("");
+    const [aiChatOpen, setAiChatOpen] = useState(false);
+
+    const loadAiInsights = useCallback(async () => {
+        if (!link?.id) return;
+
+        try {
+            setAiInsightsLoading(true);
+            setAiInsightsError("");
+
+            const response = await getLinkInsights(link.id);
+            setAiInsights(response || null);
+        } catch (error) {
+            setAiInsightsError(
+                error?.response?.data?.message ||
+                error?.message ||
+                "Could not load AI insights right now."
+            );
+        } finally {
+            setAiInsightsLoading(false);
+        }
+    }, [link?.id]);
+
+    useEffect(() => {
+        setAiInsights(null);
+    }, [link?.id]);
+
+    useEffect(() => {
+        if (!open || !link?.id) {
+            setAiInsights(null);
+            setAiInsightsError("");
+            setAiInsightsLoading(false);
+            setAiChatOpen(false);
+            return;
+        }
+
+        if (!aiInsights) {
+            loadAiInsights();
+        }
+    }, [open, link?.id, loadAiInsights]);
 
     if (!open) return null;
 
@@ -222,7 +269,25 @@ export default function LinkDetailsDrawer({
                                 </div>
                             </section>
 
-                            <LinkAnalyticsPanel analytics={analytics} />
+                            <LinkAnalyticsPanel
+                                analytics={analytics}
+                                aiInsights={aiInsights}
+                                aiInsightsLoading={aiInsightsLoading}
+                                aiInsightsError={aiInsightsError}
+                                onRetryAiInsights={loadAiInsights}
+                                onOpenAiChat={() => {
+                                    setAiChatOpen(true);
+                                }}
+                            />
+
+                            {link?.id && (
+                                <LinkAiChatPanel
+                                    open={aiChatOpen}
+                                    onClose={() => setAiChatOpen(false)}
+                                    linkId={link.id}
+                                    linkSlug={link.slug}
+                                />
+                            )}
 
                             <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
                                 <LinkRecentClicksList items={analytics?.recentClicks || []} />

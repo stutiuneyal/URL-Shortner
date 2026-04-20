@@ -20,7 +20,7 @@ import com.personal.urlshortner.dto.link.CreateLinkRequest;
 import com.personal.urlshortner.model.Workspace;
 import com.personal.urlshortner.repository.WorkspaceRepository;
 import com.personal.urlshortner.service.ILinkService;
-import com.personal.urlshortner.service.client.AIServiceClient;
+import com.personal.urlshortner.service.ai.AIServiceClient;
 
 import jakarta.validation.Valid;
 

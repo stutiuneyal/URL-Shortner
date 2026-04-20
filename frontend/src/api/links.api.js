@@ -51,3 +51,18 @@ export const getSlugSuggestions = async (payload) => {
     const response = await http.post("/api/links/slug-suggestions", payload);
     return response.data;
 };
+
+export const getLinkInsights = async (linkId) => {
+    const response = await http.get(`/api/ai/links/${linkId}/insights`);
+    return response.data;
+};
+
+export const getLinkChat = async (linkId) => {
+    const response = await http.get(`/api/ai/links/${linkId}/chat`);
+    return response.data;
+};
+
+export const sendLinkChatMessage = async (linkId, payload) => {
+    const response = await http.post(`/api/ai/links/${linkId}/chat`, payload);
+    return response.data;
+};
